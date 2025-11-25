@@ -1,4 +1,4 @@
-Bd# 🎯 Bday Assassin Game
+🎯 Bday Assassin Game
 
 **Bday Assassin Game** is a fun, web-based multiplayer game built in **Java**. Players are assigned targets, objects, and places, and the goal is to "assassinate" other players virtually. The game tracks points, confirms kills, and maintains a live leaderboard.  
 
