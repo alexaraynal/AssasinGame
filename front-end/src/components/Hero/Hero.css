@@ -1,0 +1,50 @@
+.hero {
+  height: 100vh;               
+  display: flex;               
+  flex-direction: column;      
+  align-items: center;        
+  text-align: center;
+  padding: 0 1rem;
+  margin-top: 0;
+}
+
+
+.hero-title {
+    font-size: clamp(3rem, 10vw, 8rem);
+    line-height: 1.1;
+    margin-bottom: 2rem;
+}
+
+
+.hero-buttons {
+display: flex;
+gap: 1.5rem;
+}
+
+
+.hero-btn {
+padding: 0.8rem 2rem;
+font-size: 1.2rem;
+border-radius: 8px;
+cursor: pointer;
+border: 2px solid white;
+transition: 0.25s ease;
+font-weight: 600;
+}
+
+
+.hero-btn.primary {
+background: white;
+color: black;
+}
+
+
+.hero-btn.secondary {
+background: transparent;
+color: white;
+}
+
+
+.hero-btn:hover {
+transform: scale(1.05);
+}
