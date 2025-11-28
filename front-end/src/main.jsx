@@ -7,6 +7,8 @@ import "./index.css"
 import Leaderboard from "./pages/Leaderboard";
 import GenerateMission from "./pages/GenerateMission";
 import RegisterKill from "./pages/RegisterKill";
+import JoinGame from "./pages/JoinGame";
+import LeaveGame from "./pages/LeaveGame";
 
 const router = createBrowserRouter([
   {
@@ -24,6 +26,14 @@ const router = createBrowserRouter([
   {
     path: "/register",
     element: <RegisterKill/>,
+  },
+  {
+    path: "/join",
+    element: <JoinGame/>,
+  },
+  {
+    path: "/leave",
+    element: <LeaveGame/>,
   }
 ]);
 

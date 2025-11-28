@@ -1,0 +1,17 @@
+
+#drink-list{
+    list-style: none;
+    padding: 20px;
+    margin: 0;
+    display: flex;       
+    gap: 100px; 
+    justify-content: center;
+}
+
+
+#drink-box{
+    background-color: var(--color-secondary);
+    color: black;
+    font-weight: 700;
+    border-radius: 20px;
+}

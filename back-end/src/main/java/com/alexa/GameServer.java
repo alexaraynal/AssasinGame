@@ -16,9 +16,9 @@ public class GameServer {
 
     private static final Gson gson = new Gson();
     private static final GameManager game = new GameManager();
+    private static boolean mustDrink = false;
 
     public static void main(String[] args) {
-
         port(4567);
         enableCORS("*", "GET,POST,OPTIONS", "Content-Type,Authorization");
 
@@ -29,8 +29,10 @@ public class GameServer {
             game.addPlayer(new Player("Alexa"));
             game.addPlayer(new Player("Alex"));
             game.addPlayer(new Player("Eliane"));
-            game.assignTargets();
         }
+        game.setupPlaces(Arrays.asList("Kitchen", "Balcony", "Garden"));
+        game.setupObjects(Arrays.asList("Water Gun", "Spoon", "Socks"));
+        game.assignTargets();
 
         // ----------- ROUTES -----------
 
@@ -70,6 +72,18 @@ public class GameServer {
             return gson.toJson(names);
         });
 
+        get("/mustDrink", (req, res) -> {
+            res.type("application/json");
+
+            if(!mustDrink) return new JsonObject();
+
+            List<String> names = game.mustDrinkPlayers()
+                             .stream()
+                             .map(Player::getName)
+                             .toList();
+            return gson.toJson(names);
+        });
+
         // POST confirm kill
         post("/confirmKill", (req, res) -> {
             res.type("application/json");
@@ -78,12 +92,16 @@ public class GameServer {
             String name = (String) body.get("player");
             boolean isTarget = body.get("isTarget") != null && (Boolean) body.get("isTarget");
 
-            Assignment a = game.getAssignmentForPlayerOrTarget(name);
+            String assassin = (String) body.get("assassin");
+
+            Assignment a = isTarget ? game.getAssignmentForPlayer(assassin) :
+                game.getAssignmentForPlayer(name);
+
             if (a == null) {
                 res.status(404);
                 return gson.toJson(Map.of("error", "assignment not found"));
             }
-
+            System.out.println(name + "confirmed as " + (isTarget ? "target" : "assassin"));
             if (isTarget) a.confirmByTarget();
             else a.confirmByPlayer();
 
@@ -93,18 +111,34 @@ public class GameServer {
         });
 
         post("/leave", (req, res) -> {
+            
             res.type("application/json");
             Map<String,Object> body = gson.fromJson(req.body(), Map.class);
             String name = (String) body.get("player");
-            Boolean cooldown = (Boolean) body.getOrDefault("cooldown", true);
+            
+            if (name == null) {
+                res.status(400);
+                return gson.toJson(Map.of("error", "player is required"));
+            }
+            
+            else game.removePlayerByName(name);
+            System.out.println("Player " + name + " left");
+
+            return gson.toJson(Map.of("ok", true));
+        });
+        post("/newPlayer", (req, res) -> {
+            res.type("application/json");
+            Map<String,Object> body = gson.fromJson(req.body(), Map.class);
+
+            String name = (String) body.get("player");
+            
+            System.out.println("New player: " + name);
 
             if (name == null) {
                 res.status(400);
                 return gson.toJson(Map.of("error", "player is required"));
             }
-
-            else game.removePlayerByName(name);
-
+            else game.newPlayer(new Player(name));
             return gson.toJson(Map.of("ok", true));
         });
 
@@ -118,6 +152,18 @@ public class GameServer {
         }, 0, 30, TimeUnit.MINUTES);
 
         scheduler.scheduleAtFixedRate(() -> {dumpLeaderboard();}, 0, 10, TimeUnit.MINUTES);
+
+        scheduler.scheduleAtFixedRate(() -> {
+            mustDrink = true;
+            scheduler.schedule(() -> {
+                mustDrink = false;
+            }, 1, TimeUnit.MINUTES);
+
+        }, 30, 30, TimeUnit.MINUTES);
+
+        init();
+        awaitInitialization();
+
         System.out.println("Server started on http://localhost:4567");
     }
 

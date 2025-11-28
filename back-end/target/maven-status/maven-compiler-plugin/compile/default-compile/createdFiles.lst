@@ -1,6 +1,7 @@
 com\alexa\Assignment.class
 com\alexa\GameServer.class
+com\alexa\GameManager.class
+com\alexa\GameServer$1.class
 com\alexa\Place.class
 com\alexa\GameObject.class
-com\alexa\GameManager.class
 com\alexa\Player.class

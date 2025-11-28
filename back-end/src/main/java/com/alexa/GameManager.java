@@ -39,12 +39,21 @@ public class GameManager {
             
             killer.setTarget(target);
             currentAssignments.add(new Assignment(killer, target, obj, place));
+            System.out.println(killer.getName() + " must kill " + target.getName());
         }
     }
     
     public void assignToPlayer(Player killer)
     {
-        Player target = activePlayers.get(rnd.nextInt(activePlayers.size()));
+        if(activePlayers.size() < 2) return;
+        Player target;
+
+        do{
+            target = activePlayers.get(rnd.nextInt(activePlayers.size()));
+
+        }
+        while(target == killer);
+
         GameObject obj = objects.get(rnd.nextInt(objects.size()));
         Place place = places.get(rnd.nextInt(places.size()));
         killer.setTarget(target);
@@ -92,10 +101,25 @@ public class GameManager {
             a.getPlayer().equals(toRemove.get()) || a.getTarget().equals(toRemove.get())
         );
         Optional<Player> prevTarget = activePlayers.stream()
-                                                .filter(p -> p.getTarget().equals(playerName))
+                                                .filter(p -> p.getTarget().equals(toRemove.get()))
                                                 .findFirst();          
         if(prevTarget.isPresent())
+        {
+            System.out.println(prevTarget.get().getName());
             assignToPlayer(prevTarget.get());                                                                                  
+        }
+    }
+
+    public List<Player> mustDrinkPlayers()
+    {
+        int s = activePlayers.size();
+        return getLeaderboard().subList(s<3 ? 0 : s-3, activePlayers.size());
+    }
+
+    public void newPlayer(Player p)
+    {
+        activePlayers.add(p);
+        assignToPlayer(p);
     }
 }
 

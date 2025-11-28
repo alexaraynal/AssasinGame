@@ -3,6 +3,7 @@ import "./GenerateMission.css"
 
 export default function RegisterCmp() {
   const [player, setPlayer] = useState("");
+  const [assassin, setAssassin] = useState("");
   const [isTarget, setIsTarget] = useState(false);
   const [status, setStatus] = useState(null);
 
@@ -15,7 +16,7 @@ export default function RegisterCmp() {
         headers: {
           "Content-Type": "application/json"
         },
-        body: JSON.stringify({ player, isTarget })
+        body: JSON.stringify({ player, assassin,isTarget })
       });
 
       const data = await res.json();
@@ -30,15 +31,27 @@ export default function RegisterCmp() {
     <section className="generate-wrapper">
       <form className="generate-card" onSubmit={handleSubmit}>
         <h2 className="title">Register Kill</h2>
-
-        <label className="label">Your Name</label>
-        <input
-          className="input"
-          placeholder="Enter your name..."
-          value={player}
-          onChange={(e) => setPlayer(e.target.value)}
-          required
-        />
+          <label className="label">Your Name</label>
+          <input
+            className="input"
+            placeholder="Enter your name..."
+            value={player}
+            onChange={(e) => setPlayer(e.target.value)}
+            required
+          />
+          {
+            isTarget &&
+            <>
+              <label className="label">I was killed by</label>
+              <input
+                className="input"
+                placeholder="Enter the name of your assassin..."
+                value={assassin}
+                onChange={(e) => setAssassin(e.target.value)}
+                required
+              />
+            </>
+          }
 
         <label className="label">Report your role in this kill</label>
         <select
