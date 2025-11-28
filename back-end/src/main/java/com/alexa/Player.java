@@ -2,7 +2,7 @@ package com.alexa;
 
 public class Player {
     private final String name;
-    private Player target;
+    private transient Player target;
     private int points = 0;
 
     private int kills = 0, deaths = 0;

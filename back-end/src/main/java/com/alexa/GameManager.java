@@ -4,13 +4,9 @@ import java.util.*;
 
 public class GameManager {
 
-    //List of players
     private final List<Player> activePlayers = new ArrayList<>();
-    //List of objects
     private final List<GameObject> objects = new ArrayList<>();
-    //List of places
     private final List<Place> places = new ArrayList<>();
-    //List of assignments
     private final List<Assignment> currentAssignments = new ArrayList<>();
     private final Random rnd = new Random();
 

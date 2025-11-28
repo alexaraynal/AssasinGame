@@ -2,7 +2,13 @@ package com.alexa;
 
 import static spark.Spark.*;
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonObject;
+import com.google.gson.reflect.TypeToken;
 
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.*;
 
@@ -16,13 +22,15 @@ public class GameServer {
         port(4567);
         enableCORS("*", "GET,POST,OPTIONS", "Content-Type,Authorization");
 
-        // Sample initial data
-        game.setupObjects(Arrays.asList("Water Gun", "Spoon", "Socks"));
-        game.setupPlaces(Arrays.asList("Kitchen", "Balcony", "Garden"));
-        game.addPlayer(new Player("Alexa"));
-        game.addPlayer(new Player("Alex"));
-        game.addPlayer(new Player("Eliane"));
-        game.assignTargets();
+        if(!loadLeaderboard())
+        {
+            game.setupObjects(Arrays.asList("Water Gun", "Spoon", "Socks"));
+            game.setupPlaces(Arrays.asList("Kitchen", "Balcony", "Garden"));
+            game.addPlayer(new Player("Alexa"));
+            game.addPlayer(new Player("Alex"));
+            game.addPlayer(new Player("Eliane"));
+            game.assignTargets();
+        }
 
         // ----------- ROUTES -----------
 
@@ -30,11 +38,7 @@ public class GameServer {
         get("/getLeaderboard", (req, res) -> {
             res.type("application/json");
 
-            var leaderboard = game.getLeaderboard().stream()
-                .map(p -> Map.of("name", p.getName(), "points", p.getPoints()))
-                .toList();
-
-            return gson.toJson(leaderboard);
+            return gson.toJson(game.getLeaderboard());
         });
 
         // GET assignment
@@ -113,8 +117,45 @@ public class GameServer {
                 System.out.println(p.getName() + ": " + p.getPoints()));
         }, 0, 30, TimeUnit.MINUTES);
 
+        scheduler.scheduleAtFixedRate(() -> {dumpLeaderboard();}, 0, 10, TimeUnit.MINUTES);
         System.out.println("Server started on http://localhost:4567");
     }
+
+    private static void dumpLeaderboard() 
+    {
+        Gson gson = new GsonBuilder().setPrettyPrinting().create();
+        
+        var players = game.getLeaderboard();
+
+        try (FileWriter writer = new FileWriter("leaderboard.json")) 
+        {
+            gson.toJson(players, writer);
+            System.out.println("Leaderboard snapshot");
+        }
+        catch (IOException e) 
+        {
+            e.printStackTrace();
+        }
+    }
+    private static boolean loadLeaderboard() 
+    {
+        Gson gson = new Gson();
+
+        try (FileReader reader = new FileReader("leaderboard.json")) 
+        {
+            var listType = new TypeToken<List<Player>>() {}.getType();
+            List<Player> players = gson.fromJson(reader, listType);
+            for(var p : players)
+                game.addPlayer(p);
+            return true;
+        } 
+        catch (IOException e) 
+        {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
 
     // -------------------------------
     // CORS helper
