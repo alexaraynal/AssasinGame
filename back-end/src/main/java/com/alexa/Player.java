@@ -3,8 +3,9 @@ package com.alexa;
 public class Player {
     private final String name;
     private Player target;
-    private boolean onCooldown = false;
     private int points = 0;
+
+    private int kills = 0, deaths = 0;
 
     public Player(String name) { this.name = name; }
     public String getName() { return name; }
@@ -12,11 +13,14 @@ public class Player {
     public Player getTarget() { return target; }
     public void setTarget(Player t) { this.target = t; }
 
-    public boolean isOnCooldown() { return onCooldown; }
-    public void setCooldown(boolean c) { this.onCooldown = c; }
-
     public int getPoints() { return points; }
     public void addPoints(int p) { points += p; }
     public void deductPoints(int p) { points -= p; }
+
+    public void addKill(){kills++;}
+    public void addDeath(){deaths++;}
+
+    public int getKills(){return kills;}
+    public int getDeaths(){return deaths;}
 }
 

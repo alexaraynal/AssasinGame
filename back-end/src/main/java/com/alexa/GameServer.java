@@ -74,7 +74,7 @@ public class GameServer {
             String name = (String) body.get("player");
             boolean isTarget = body.get("isTarget") != null && (Boolean) body.get("isTarget");
 
-            Assignment a = game.getAssignmentForPlayer(name);
+            Assignment a = game.getAssignmentForPlayerOrTarget(name);
             if (a == null) {
                 res.status(404);
                 return gson.toJson(Map.of("error", "assignment not found"));
@@ -99,7 +99,6 @@ public class GameServer {
                 return gson.toJson(Map.of("error", "player is required"));
             }
 
-            if (cooldown) game.leavePartyCooldown(name);
             else game.removePlayerByName(name);
 
             return gson.toJson(Map.of("ok", true));

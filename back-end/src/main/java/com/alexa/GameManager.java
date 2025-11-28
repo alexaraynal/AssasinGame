@@ -40,13 +40,28 @@ public class GameManager {
             Player target = shuffled.get((i + 1) % shuffled.size());
             GameObject obj = objects.get(rnd.nextInt(objects.size()));
             Place place = places.get(rnd.nextInt(places.size()));
-
+            
             killer.setTarget(target);
             currentAssignments.add(new Assignment(killer, target, obj, place));
         }
     }
+    
+    public void assignToPlayer(Player killer)
+    {
+        Player target = activePlayers.get(rnd.nextInt(activePlayers.size()));
+        GameObject obj = objects.get(rnd.nextInt(objects.size()));
+        Place place = places.get(rnd.nextInt(places.size()));
+        killer.setTarget(target);
+        currentAssignments.add(new Assignment(killer, target, obj, place));
+    }
 
     public Assignment getAssignmentForPlayer(String name){
+        return currentAssignments.stream()
+            .filter(a -> a.getPlayer().getName().equals(name))
+            .findFirst().orElse(null);
+    }
+
+    public Assignment getAssignmentForPlayerOrTarget(String name){
         return currentAssignments.stream()
             .filter(a -> a.getPlayer().getName().equals(name)
                       || a.getTarget().getName().equals(name))
@@ -55,11 +70,12 @@ public class GameManager {
 
     public void confirmKill(Assignment a) {
         a.getPlayer().addPoints(20);
+        a.getPlayer().addKill();
+
         a.getTarget().deductPoints(10);
+        a.getTarget().addDeath();
 
-        a.getTarget().setCooldown(true);
-
-        assignTargets();
+        assignToPlayer(a.getPlayer());
     }
 
     public List<Player> getLeaderboard() {
@@ -68,35 +84,22 @@ public class GameManager {
         return sorted;
     }
 
-    public void leavePartyCooldown(String playerName) {
-        for (Player p : activePlayers) {
-            if (p.getName().equals(playerName)) {
-                p.setCooldown(true);  // mark them inactive
-                break;
-            }
-        }
-        // Reassign targets for others if necessary
-        assignTargets();
+    public void removePlayerByName(String playerName) 
+    {
+        Optional<Player> toRemove = activePlayers.stream()
+                                                .filter(p -> p.getName().equals(playerName))
+                                                .findFirst();
+
+        if (!toRemove.isPresent()) return;
+        activePlayers.remove(toRemove.get());
+        currentAssignments.removeIf(a -> 
+            a.getPlayer().equals(toRemove.get()) || a.getTarget().equals(toRemove.get())
+        );
+        Optional<Player> prevTarget = activePlayers.stream()
+                                                .filter(p -> p.getTarget().equals(playerName))
+                                                .findFirst();          
+        if(prevTarget.isPresent())
+            assignToPlayer(prevTarget.get());                                                                                  
     }
-
-    // Remove a player completely from the game
-    public void removePlayerByName(String playerName) {
-
-        // Find the player first
-        for (Player p : activePlayers) {
-            if (p.getName().equals(playerName)) {
-                // Remove any assignments involving them\
-                activePlayers.remove(p);
-                currentAssignments.removeIf(a -> 
-                a.getPlayer().equals(p) || a.getTarget().equals(p));
-                // Reassign targets for remaining players
-                assignTargets();
-                break;
-            }
-        }
-        
-    }
-
-
 }
 
